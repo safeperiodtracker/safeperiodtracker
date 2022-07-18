@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
@@ -7,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:tuple/tuple.dart';
+import 'package:collection/collection.dart';
 
 void main() {
   runApp(const PrivatePeriodTracker());
@@ -46,6 +48,21 @@ Future<String> _localRead(String filename) async {
   return await file.readAsString();
 }
 
+Future<void> _localWrite(String filename, String contents) async {
+  final file = await _localFile(filename);
+  await file.writeAsString(contents);
+}
+
+Future<List<int>> _localReadAsBytes(String filename) async {
+  final file = await _localFile(filename);
+  return await file.readAsBytes();
+}
+
+Future<void> _localWriteAsBytes(String filename, List<int> contents) async {
+  final file = await _localFile(filename);
+  await file.writeAsBytes(contents);
+}
+
 class StartPage extends StatelessWidget {
   const StartPage({Key? key, required this.title}) : super(key: key);
   final String title;
@@ -59,7 +76,7 @@ class StartPage extends StatelessWidget {
           SchedulerBinding.instance.addPostFrameCallback((_) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => DecryptPage(title: 'Decrypt Data', config: '${snapshot.data}')),
+              MaterialPageRoute(builder: (context) => DecryptPage(title: 'Decrypt Data', config: '${snapshot.data}', failed: false)),
             );
           });
         }
@@ -71,16 +88,21 @@ class StartPage extends StatelessWidget {
             );
           });
         }
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const <Widget>[
-              SizedBox(
-                width: 60,
-                height: 60,
-                child: CircularProgressIndicator(),
-              ),
-            ],
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(title),
+          ),
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const <Widget>[
+                SizedBox(
+                  width: 60,
+                  height: 60,
+                  child: CircularProgressIndicator(),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -89,9 +111,10 @@ class StartPage extends StatelessWidget {
 }
 
 class DecryptPage extends StatelessWidget {
-  const DecryptPage({Key? key, required this.title, required this.config}) : super(key: key);
+  const DecryptPage({Key? key, required this.title, required this.config, required this.failed}) : super(key: key);
   final String title;
   final String config;
+  final bool failed;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,15 +125,8 @@ class DecryptPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SetupPage(title: 'Home')),
-                );
-              },
-              child: const Text('Unlock Data'),
-            ),
+            (failed) ? const Text('Failed to decrypt!') : const Text(''),
+            DecryptForm(config: config),
           ],
         ),
       ),
@@ -123,6 +139,15 @@ class StartForm extends StatefulWidget {
   @override
   StartFormState createState() {
     return StartFormState();
+  }
+}
+
+class DecryptForm extends StatefulWidget {
+  const DecryptForm({super.key, required this.config});
+  final String config;
+  @override
+  DecryptFormState createState() {
+    return DecryptFormState();
   }
 }
 
@@ -139,14 +164,11 @@ Future<SecretKey> deriveKeyCompute(Tuple3<Pbkdf2, SecretKey, List<int>> args) as
   return await args.item1.deriveKey(secretKey: args.item2, nonce: args.item3);
 }
 
-Future<Tuple2<SecretKey, List<int>>> getKey(Pbkdf2 keyDerivator, String password, List<int> nonce) async {
-  return Tuple2<SecretKey, List<int>>(
-    await compute(
+Future<SecretKey> getKey(Pbkdf2 keyDerivator, String password, List<int> nonce) async {
+    return await compute(
       deriveKeyCompute,
       Tuple3<Pbkdf2, SecretKey, List<int>>(keyDerivator, SecretKey(password.codeUnits), nonce),
-    ),
-    nonce,
-  );
+    );
 }
 
 Future<SecretBox> encryptCompute(Tuple5<AesGcm, List<int>, SecretKey, List<int>, List<int>> args) async {
@@ -156,6 +178,113 @@ Future<SecretBox> encryptCompute(Tuple5<AesGcm, List<int>, SecretKey, List<int>,
     nonce: args.item4,
     aad: args.item5,
   );
+}
+
+class HomePage extends StatefulWidget {
+  const HomePage({super.key, required this.title});
+  final String title;
+  @override
+  HomePageState createState() {
+    return HomePageState();
+  }
+}
+
+class HomePageState extends State<HomePage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+    );
+  }
+}
+
+Future<List<int>> decryptCompute(Tuple4<AesGcm, SecretBox, SecretKey, List<int>> args) async {
+  return await args.item1.decrypt(
+    args.item2,
+    secretKey: args.item3,
+    aad: args.item4,
+  );
+}
+
+Function eq = const ListEquality().equals;
+
+class ReadPage extends StatelessWidget {
+  const ReadPage({Key? key, required this.title, required this.password, required this.nonce, required this.iterations, required this.config}) : super(key: key);
+  final String password;
+  final List<int> nonce;
+  final int iterations;
+  final String title;
+  final String config;
+  Future<int> encrypt() async {
+    final keyDerivator = Pbkdf2(
+      macAlgorithm: Hmac.sha512(),
+      iterations: iterations,
+      bits: 256,
+    );
+    SecretKey key = await getKey(keyDerivator, password, nonce);
+    final algorithm = AesGcm.with256bits();
+    List<int> data = await _localReadAsBytes('data');
+    final secretBox = SecretBox.fromConcatenation(
+      data,
+      nonceLength: 12,
+      macLength: 16,
+    );
+    final decrypted = await compute(
+      decryptCompute,
+      Tuple4<AesGcm, SecretBox, SecretKey, List<int>>(
+        algorithm,
+        secretBox,
+        key,
+        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+      ),
+    );
+    assert(eq(decrypted.sublist(0, 16), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]));
+    return 0;
+  }
+  @override
+  Widget build(BuildContext context) {
+    Future<int> task = encrypt();
+    return FutureBuilder<int>(
+      future: task,
+      builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
+        if(snapshot.hasData){
+          SchedulerBinding.instance.addPostFrameCallback((_) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomePage(title: 'Home')),
+            );
+          });
+        }
+        if(snapshot.hasError){
+          SchedulerBinding.instance.addPostFrameCallback((_) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => DecryptPage(config: config, title: 'Decrypt Data', failed: true)),
+            );
+          });
+        }
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(title),
+          ),
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const <Widget>[
+                SizedBox(
+                  width: 60,
+                  height: 60,
+                  child: CircularProgressIndicator(),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class WritePage extends StatelessWidget {
@@ -171,19 +300,23 @@ class WritePage extends StatelessWidget {
       iterations: iterations,
       bits: 256,
     );
-    Tuple2<SecretKey, List<int>> key = await getKey(keyDerivator, password, nonce);
+    SecretKey key = await getKey(keyDerivator, password, nonce);
     final algorithm = AesGcm.with256bits();
     final encNonce = algorithm.newNonce();
+    final Map<String, dynamic> config = Map.fromIterables(['nonce', 'iterations'], [nonce, iterations]);
+    await _localWrite('config.json', jsonEncode(config));
     final secretBox = await compute(
       encryptCompute,
       Tuple5<AesGcm, List<int>, SecretKey, List<int>, List<int>>(
         algorithm,
         data,
-        key.item1,
+        key,
         encNonce,
         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
       ),
     );
+    List<int> dataToWrite = secretBox.concatenation();
+    await _localWriteAsBytes('data', dataToWrite);
     return 0;
   }
   @override
@@ -201,23 +334,23 @@ class WritePage extends StatelessWidget {
           });
         }
         if(snapshot.hasError){
-          SchedulerBinding.instance.addPostFrameCallback((_) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const SetupPage(title: 'Create Password')),
-            );
-          });
+          return Text('${snapshot.error}');
         }
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const <Widget>[
-              SizedBox(
-                width: 60,
-                height: 60,
-                child: CircularProgressIndicator(),
-              ),
-            ],
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(title),
+          ),
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const <Widget>[
+                SizedBox(
+                  width: 60,
+                  height: 60,
+                  child: CircularProgressIndicator(),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -282,15 +415,77 @@ class StartFormState extends State<StartForm> {
             ),
           ),
           ElevatedButton(
-            onPressed: () async {
+            onPressed: () {
               if (_formKey.currentState!.validate()) {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => WritePage(title: 'Working',
+                  MaterialPageRoute(
+                    builder: (context) => WritePage(title: 'Working',
                       password: pwController.text,
                       nonce: getNonce(),
                       data: const [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
-                      iterations: int.tryParse(roundsController.text) ?? 120000),
+                      iterations: int.tryParse(roundsController.text) ?? 120000,
+                    ),
+                  ),
+                );
+              }
+            },
+            child: const Text("Submit"),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class DecryptFormState extends State<DecryptForm> {
+  final _formKey = GlobalKey<FormState>();
+  final pwController = TextEditingController();
+  @override
+  void dispose() {
+    pwController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: TextFormField(
+              decoration: const InputDecoration(
+                border: UnderlineInputBorder(),
+                hintText: 'Password',
+              ),
+              obscureText: true,
+              controller: pwController,
+              enableSuggestions: false,
+              autocorrect: false,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a password';
+                }
+                return null;
+              },
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (_formKey.currentState!.validate()) {
+                Map<String, dynamic> confJSON = jsonDecode(widget.config);
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ReadPage(
+                      title: 'Working',
+                      password: pwController.text,
+                      nonce: confJSON['nonce'].cast<int>(),
+                      iterations: confJSON['iterations'] as int,
+                      config: widget.config,
+                    ),
                   ),
                 );
               }
