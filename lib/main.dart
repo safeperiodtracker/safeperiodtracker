@@ -1,3 +1,21 @@
+/*
+Safe Period Tracker
+Copyright (C) 2022  Julien Grijalva
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -9,6 +27,8 @@ import 'package:cryptography/cryptography.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:tuple/tuple.dart';
 import 'package:collection/collection.dart';
+
+import 'home.dart';
 
 void main() {
   runApp(const PrivatePeriodTracker());
@@ -61,6 +81,88 @@ Future<List<int>> _localReadAsBytes(String filename) async {
 Future<void> _localWriteAsBytes(String filename, List<int> contents) async {
   final file = await _localFile(filename);
   await file.writeAsBytes(contents);
+}
+
+Future<void> _localSchneier(File file, int length) async {
+  List<int> write = [];
+  for(int i = 0;i<length;i++){
+    write.add(0x00);
+  }
+  await file.writeAsBytes(write);
+  write = [];
+  for(int i = 0;i<length;i++){
+    write.add(0xff);
+  }
+  await file.writeAsBytes(write);
+  var rng = Random.secure();
+  for(int i = 0;i<5;i++){
+    write = [];
+    for(int j = 0;j<length;j++){
+      write.add(rng.nextInt(256));
+    }
+    await file.writeAsBytes(write);
+  }
+}
+
+Future<void> _localDoDE(File file, int length) async{
+  List<int> write = [];
+  for(int i = 0;i<length;i++){
+    write.add(0x00);
+  }
+  await file.writeAsBytes(write);
+  write = [];
+  for(int i = 0;i<length;i++){
+    write.add(0xff);
+  }
+  await file.writeAsBytes(write);
+  var rng = Random.secure();
+  write = [];
+  for(int i = 0;i<length;i++){
+    write.add(rng.nextInt(256));
+  }
+  await file.writeAsBytes(write);
+}
+
+Future<void> _localDoDECE(File file, int length) async {
+  await _localDoDE(file, length);
+  var rng = Random.secure();
+  List<int> write = [];
+  for(int i = 0;i<length;i++){
+    write.add(rng.nextInt(256));
+  }
+  await file.writeAsBytes(write);
+  await _localDoDE(file, length);
+}
+
+Future<void> _localShredFile(String filename, String? method) async {
+  final file = await _localFile(filename);
+  final length = await file.length();
+  switch(method) {
+    case 'Bruce Schneier\'s Algorithm': {
+      await _localSchneier(file, length);
+    }
+    break;
+    case 'U.S. DoD 5220.22-M (E)': {
+      await _localDoDE(file, length);
+    }
+    break;
+    case 'U.S. DoD 5220.22-M (ECE)': {
+      await _localDoDECE(file, length);
+    }
+    break;
+    default: {
+      await _localDoDECE(file, length);
+    }
+  }
+  List<int> write = [];
+  /*
+    I don't know much about data erasure, maybe this will make it look like there never was any data? random bits on a storage medium might be suspicious
+  */
+  for(int i = 0;i<length;i++){
+    write.add(0);
+  }
+  await file.writeAsBytes(write);
+  await file.delete();
 }
 
 class StartPage extends StatelessWidget {
@@ -125,8 +227,24 @@ class DecryptPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            (failed) ? const Text('Failed to decrypt!') : const Text(''),
+            (failed) ? Text(
+              'Failed to decrypt!',
+              style: TextStyle(
+                color: Colors.red[400],
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
+            ) : const Text(''),
             DecryptForm(config: config),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ShredPage(title: 'Shred Data')),
+                );
+              },
+              child: const Text('Shred Data'),
+            ),
           ],
         ),
       ),
@@ -139,6 +257,14 @@ class StartForm extends StatefulWidget {
   @override
   StartFormState createState() {
     return StartFormState();
+  }
+}
+
+class ShredForm extends StatefulWidget {
+  const ShredForm({super.key});
+  @override
+  ShredFormState createState() {
+    return ShredFormState();
   }
 }
 
@@ -178,26 +304,6 @@ Future<SecretBox> encryptCompute(Tuple5<AesGcm, List<int>, SecretKey, List<int>,
     nonce: args.item4,
     aad: args.item5,
   );
-}
-
-class HomePage extends StatefulWidget {
-  const HomePage({super.key, required this.title});
-  final String title;
-  @override
-  HomePageState createState() {
-    return HomePageState();
-  }
-}
-
-class HomePageState extends State<HomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-    );
-  }
 }
 
 Future<List<int>> decryptCompute(Tuple4<AesGcm, SecretBox, SecretKey, List<int>> args) async {
@@ -430,7 +536,7 @@ class StartFormState extends State<StartForm> {
                 );
               }
             },
-            child: const Text("Submit"),
+            child: const Text('Submit'),
           ),
         ],
       ),
@@ -490,7 +596,55 @@ class DecryptFormState extends State<DecryptForm> {
                 );
               }
             },
-            child: const Text("Submit"),
+            child: const Text('Submit'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ShredFormState extends State<ShredForm> {
+  final _formKey = GlobalKey<FormState>();
+  Future<void> formSave(String? method, VoidCallback onSuccess) async {
+    await _localShredFile('config.json', method);
+    await _localShredFile('data', method);
+    onSuccess.call();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: DropdownButtonFormField<String>(
+              value: 'U.S. DoD 5220.22-M (ECE)',
+              elevation: 16,
+              onChanged: (String? _) {},
+              onSaved: (String? value) {
+                formSave(value, () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const StartPage(title: 'Working')),
+                  );
+                });
+              },
+              items: <String>['U.S. DoD 5220.22-M (ECE)', 'U.S. DoD 5220.22-M (E)', 'Bruce Schneier\'s Algorithm'].map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              _formKey.currentState?.save();
+            },
+            child: const Text('Submit'),
           ),
         ],
       ),
@@ -512,6 +666,27 @@ class SetupPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: const <Widget>[
             StartForm(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ShredPage extends StatelessWidget {
+  const ShredPage({Key? key, required this.title}) : super(key: key);
+  final String title;
+  @override
+  Widget build(BuildContext context){
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const <Widget>[
+            ShredForm(),
           ],
         ),
       ),
