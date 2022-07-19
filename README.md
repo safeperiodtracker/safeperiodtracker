@@ -1,3 +1,3 @@
 # periodtracker
 
-private period tracker
+private period tracker, encryption, shredding, ...
