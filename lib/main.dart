@@ -238,7 +238,7 @@ class DecryptPage extends StatelessWidget {
             DecryptForm(config: config),
             ElevatedButton(
               onPressed: () {
-                Navigator.pushReplacement(
+                Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const ShredPage(title: 'Shred Data')),
                 );
@@ -626,9 +626,10 @@ class ShredFormState extends State<ShredForm> {
               onChanged: (String? _) {},
               onSaved: (String? value) {
                 formSave(value, () {
-                  Navigator.pushReplacement(
+                  Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(builder: (context) => const StartPage(title: 'Working')),
+                    (route) => false,
                   );
                 });
               },
