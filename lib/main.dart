@@ -1,6 +1,6 @@
 /*
 Safe Period Tracker
-Copyright (C) 2022  Julien Grijalva
+Copyright (C) 2022  The safeperiodtracker Team
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -622,7 +622,6 @@ class ShredFormState extends State<ShredForm> {
             padding: const EdgeInsets.symmetric(horizontal: 32),
             child: DropdownButtonFormField<String>(
               value: 'U.S. DoD 5220.22-M (ECE)',
-              elevation: 16,
               onChanged: (String? _) {},
               onSaved: (String? value) {
                 formSave(value, () {
@@ -645,7 +644,7 @@ class ShredFormState extends State<ShredForm> {
             onPressed: () {
               _formKey.currentState?.save();
             },
-            child: const Text('Submit'),
+            child: const Text('Shred'),
           ),
         ],
       ),
