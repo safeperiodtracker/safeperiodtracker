@@ -176,17 +176,19 @@ class StartPage extends StatelessWidget {
       builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
         if(snapshot.hasData){
           SchedulerBinding.instance.addPostFrameCallback((_) {
-            Navigator.pushReplacement(
+            Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (context) => DecryptPage(title: 'Decrypt Data', config: '${snapshot.data}', failed: false)),
+              (route) => false,
             );
           });
         }
         if(snapshot.hasError){
           SchedulerBinding.instance.addPostFrameCallback((_) {
-            Navigator.pushReplacement(
+            Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (context) => const SetupPage(title: 'Create Password')),
+              (route) => false,
             );
           });
         }
@@ -357,17 +359,19 @@ class ReadPage extends StatelessWidget {
       builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
         if(snapshot.hasData){
           SchedulerBinding.instance.addPostFrameCallback((_) {
-            Navigator.pushReplacement(
+            Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (context) => const HomePage(title: 'Home')),
+              (route) => false,
             );
           });
         }
         if(snapshot.hasError){
           SchedulerBinding.instance.addPostFrameCallback((_) {
-            Navigator.pushReplacement(
+            Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (context) => DecryptPage(config: config, title: 'Decrypt Data', failed: true)),
+              (route) => false,
             );
           });
         }
@@ -433,9 +437,10 @@ class WritePage extends StatelessWidget {
       builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
         if(snapshot.hasData){
           SchedulerBinding.instance.addPostFrameCallback((_) {
-            Navigator.pushReplacement(
+            Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (context) => const StartPage(title: 'Working')),
+              (route) => false,
             );
           });
         }
@@ -523,7 +528,7 @@ class StartFormState extends State<StartForm> {
           ElevatedButton(
             onPressed: () {
               if (_formKey.currentState!.validate()) {
-                Navigator.pushReplacement(
+                Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
                     builder: (context) => WritePage(title: 'Working',
@@ -533,6 +538,7 @@ class StartFormState extends State<StartForm> {
                       iterations: int.tryParse(roundsController.text) ?? 120000,
                     ),
                   ),
+                  (route) => false,
                 );
               }
             },
@@ -582,7 +588,7 @@ class DecryptFormState extends State<DecryptForm> {
             onPressed: () {
               if (_formKey.currentState!.validate()) {
                 Map<String, dynamic> confJSON = jsonDecode(widget.config);
-                Navigator.pushReplacement(
+                Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
                     builder: (context) => ReadPage(
@@ -593,6 +599,7 @@ class DecryptFormState extends State<DecryptForm> {
                       config: widget.config,
                     ),
                   ),
+                  (route) => false,
                 );
               }
             },
