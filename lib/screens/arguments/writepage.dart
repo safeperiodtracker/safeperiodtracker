@@ -16,24 +16,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import 'package:flutter/material.dart';
-
-class HomePage extends StatefulWidget {
-  const HomePage({super.key, required this.title});
+class WritePageArguments {
+  WritePageArguments(this.title, this.password, this.nonce, this.data, this.iterations);
   final String title;
-  @override
-  HomePageState createState() {
-    return HomePageState();
-  }
-}
-
-class HomePageState extends State<HomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-    );
-  }
+  final String password;
+  final List<int> nonce;
+  final List<int> data;
+  final int iterations;
 }

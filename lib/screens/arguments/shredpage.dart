@@ -16,24 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import 'package:flutter/material.dart';
-import 'package:periodtracker/routes.dart';
-
-void main() {
-  runApp(const PrivatePeriodTracker());
-}
-
-class PrivatePeriodTracker extends StatelessWidget {
-  const PrivatePeriodTracker({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Private Period Tracker',
-      theme: ThemeData(
-        primarySwatch: Colors.pink,
-      ),
-      routes: routes,
-    );
-  }
+class ShredPageArguments {
+  ShredPageArguments(this.title);
+  final String title;
 }

@@ -17,23 +17,39 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import 'package:flutter/material.dart';
-import 'package:periodtracker/routes.dart';
+import 'package:periodtracker/screens/arguments/homepage.dart';
 
-void main() {
-  runApp(const PrivatePeriodTracker());
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  HomePageState createState() {
+    return HomePageState();
+  }
 }
 
-class PrivatePeriodTracker extends StatelessWidget {
-  const PrivatePeriodTracker({Key? key}) : super(key: key);
+class HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Private Period Tracker',
-      theme: ThemeData(
-        primarySwatch: Colors.pink,
+    final title = (ModalRoute.of(context)!.settings.arguments as HomePageArguments).title;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+        actions: <Widget>[
+          IconButton(
+            onPressed: () {
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/',
+                (route) => false,
+              );
+            },
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+          ),
+        ],
       ),
-      routes: routes,
     );
   }
 }
