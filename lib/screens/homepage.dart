@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import 'package:flutter/material.dart';
 import 'package:periodtracker/screens/arguments/homepage.dart';
+import 'package:indent/indent.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -39,10 +40,34 @@ class HomePageState extends State<HomePage> {
         actions: <Widget>[
           IconButton(
             onPressed: () {
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                '/',
-                (route) => false,
+              showDialog<String>(
+                context: context,
+                builder: (BuildContext context) => AlertDialog(
+                  title: const Text('Confirm Logout'),
+                  content: Text(
+                    '''
+                    You cannot receive notifications when logged out.
+                    
+                    If you are logging out for privacy reasons, there is no guarantee that private memory has been cleared. Please restart your device if you are concerned.
+                    '''.unindent(),
+                  ),
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          '/',
+                          (route) => false,
+                        );
+                      },
+                      child: const Text('OK'),
+                    ),
+                  ],
+                ),
               );
             },
             icon: const Icon(Icons.logout),
