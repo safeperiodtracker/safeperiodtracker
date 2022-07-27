@@ -30,7 +30,6 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePageState extends State<HomePage> {
-
   @override
   Widget build(BuildContext context) {
     final title = (ModalRoute.of(context)!.settings.arguments as HomePageArguments).title;
@@ -48,7 +47,7 @@ class HomePageState extends State<HomePage> {
                     '''
                     You cannot receive notifications when logged out.
                     
-                    If you are logging out for privacy reasons, there is no guarantee that private memory has been cleared. Please restart your device if you are concerned.
+                    If you are logging out for privacy reasons, there is no guarantee that private memory will be cleared. Please restart your device if you are concerned.
                     '''.unindent(),
                   ),
                   actions: <Widget>[

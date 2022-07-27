@@ -17,8 +17,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import 'package:flutter/material.dart';
+import 'package:indent/indent.dart';
 import 'package:periodtracker/utilities.dart';
 import 'package:periodtracker/screens/arguments/shredpage.dart';
+
+String warning = '''
+                This will permanently (hopefully) delete all of your data.
+                
+                Please keep in mind that shredding is not always perfect. Sometimes (especially with storage devices like SD cards), data isn't overwritten when you think it is. Shredding an entire device, rather than just one file, is the best protection against this.
+                
+                Specialized tools may be able to read shredded data, but modern shredding techniques do a good job of protecting against this.
+                
+                The best way to protect yourself is to destroy your phone.
+                '''.unindent(); // put a hyperlink to DESTROY.md at some point
 
 class ShredForm extends StatefulWidget {
   const ShredForm({super.key});
@@ -68,7 +79,25 @@ class ShredFormState extends State<ShredForm> {
           ),
           ElevatedButton(
             onPressed: () {
-              _formKey.currentState?.save();
+              showDialog<String>(
+                context: context,
+                builder: (BuildContext context) => AlertDialog(
+                  title: const Text('Confirm Shred'),
+                  content: Text(warning),
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        _formKey.currentState?.save();
+                      },
+                      child: const Text('OK'),
+                    ),
+                  ],
+                ),
+              );
             },
             child: const Text('Shred'),
           ),
