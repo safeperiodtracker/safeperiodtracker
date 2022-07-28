@@ -28,6 +28,8 @@ String warning = '''
                 
                 Please keep in mind that shredding is not always perfect. Sometimes (especially with storage devices like SD cards), data isn't overwritten when you think it is. Shredding an entire device, rather than just one file, is the best protection against this.
                 
+                I am no legal expert, and I cannot guarantee that you won't get in trouble for shredding your data.
+                
                 Specialized tools may be able to read shredded data, but modern shredding techniques do a good job of protecting against this.
                 '''.unindent();
 
