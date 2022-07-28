@@ -27,6 +27,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  url_launcher: ^6.1.5
   cryptography: ^2.0.5
   path_provider: ^2.0.11
   tuple: ^2.0.0

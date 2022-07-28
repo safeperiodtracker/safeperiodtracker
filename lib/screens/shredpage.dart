@@ -16,10 +16,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:indent/indent.dart';
 import 'package:periodtracker/utilities.dart';
 import 'package:periodtracker/screens/arguments/shredpage.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 String warning = '''
                 This will permanently (hopefully) delete all of your data.
@@ -27,9 +29,7 @@ String warning = '''
                 Please keep in mind that shredding is not always perfect. Sometimes (especially with storage devices like SD cards), data isn't overwritten when you think it is. Shredding an entire device, rather than just one file, is the best protection against this.
                 
                 Specialized tools may be able to read shredded data, but modern shredding techniques do a good job of protecting against this.
-                
-                The best way to protect yourself is to destroy your phone.
-                '''.unindent(); // put a hyperlink to DESTROY.md at some point
+                '''.unindent();
 
 class ShredForm extends StatefulWidget {
   const ShredForm({super.key});
@@ -83,7 +83,23 @@ class ShredFormState extends State<ShredForm> {
                 context: context,
                 builder: (BuildContext context) => AlertDialog(
                   title: const Text('Confirm Shred'),
-                  content: Text(warning),
+                  content: RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: warning,
+                          style: const TextStyle(color: Colors.black),
+                        ),
+                        TextSpan(
+                          text: 'The best way to protect yourself is sometimes to just destroy your phone.',
+                          style: const TextStyle(color: Colors.blue),
+                          recognizer: TapGestureRecognizer()..onTap = () {
+                            launchUrlString('https://github.com/safeperiodtracker/safeperiodtracker/blob/master/DESTROY.md');
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
                   actions: <Widget>[
                     TextButton(
                       onPressed: () => Navigator.pop(context),
