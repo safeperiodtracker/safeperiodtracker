@@ -4,7 +4,7 @@ Especially with the recent overturning of Roe v. Wade, period tracking data carr
 The goal of this app is to provide period tracking services without compromising privacy. It will
 provide data shredding, encryption, and NO remote storage.
 
-## why foss? (even ignoring ethical reasons why all software should be free)
+## why foss (even ignoring ethical reasons why all software should be free)?
 
 Privacy should be verifiable. Without access to source code, that isn't possible. Additionally, if
 people don't have the right to modify the program, it can much more easily go to shit.
