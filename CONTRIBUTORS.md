@@ -6,4 +6,4 @@ Cretin suggested the app name be changed to "Period Safe". Cretin has also offer
 
 ## others
 
-Others (who have not yet given consent for a mention here) have also made suggestions and offered to beta test.
+Others (who have not yet given consent for a mention here) have also made suggestions, offered to beta test, and offered to make a logo for the app.
