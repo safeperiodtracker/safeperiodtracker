@@ -46,7 +46,7 @@ class PrivatePeriodTracker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Private Period Tracker',
+      title: 'Period Safe',
       theme: ThemeData(
         primarySwatch: Colors.pink,
       ),

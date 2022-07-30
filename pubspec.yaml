@@ -55,12 +55,9 @@ dev_dependencies:
   flutter_lints: ^2.0.0
 
 flutter_icons:
-  android: true
+  android: false
   ios: true
   image_path: "assets/icon/icon_ios.png"
-  image_path_ios: "assets/icon/icon_ios.png"
-  adaptive_icon_foreground: "assets/icon/icon_ios.png" # android icon not ready yet
-  adaptive_icon_background: "#ff94a5"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
