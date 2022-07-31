@@ -96,6 +96,8 @@ class StartFormState extends State<StartForm> {
                   getNonce(),
                   const [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
                   int.tryParse(roundsController.text) ?? 120000,
+                  true,
+                  2,
                 );
                 Navigator.pushNamedAndRemoveUntil(
                   context,

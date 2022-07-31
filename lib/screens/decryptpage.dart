@@ -19,9 +19,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:periodtracker/screens/arguments/decryptpage.dart';
 import 'package:periodtracker/screens/arguments/readpage.dart';
 import 'package:periodtracker/screens/arguments/shredpage.dart';
+import 'package:periodtracker/utilities.dart';
 
 class DecryptForm extends StatefulWidget {
   const DecryptForm({super.key, required this.config});
@@ -95,14 +97,41 @@ class DecryptFormState extends State<DecryptForm> {
   }
 }
 
-class DecryptPage extends StatelessWidget {
-  const DecryptPage({Key? key}) : super(key: key);
+class DecryptPage extends StatefulWidget {
+  const DecryptPage({super.key});
+
+  @override
+  DecryptPageState createState() {
+    return DecryptPageState();
+  }
+}
+
+class DecryptPageState extends State<DecryptPage> {
+  bool? _notifs;
 
   @override
   Widget build(BuildContext context) {
     final title = (ModalRoute.of(context)!.settings.arguments as DecryptPageArguments).title;
     final config = (ModalRoute.of(context)!.settings.arguments as DecryptPageArguments).config;
     final failed = (ModalRoute.of(context)!.settings.arguments as DecryptPageArguments).failed;
+    flutterLocalNotificationsPlugin.cancel(0);
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+    AndroidNotificationDetails(
+        '0', 'logged out notifs',
+        channelDescription: 'logged out notifs',
+        importance: Importance.max,
+        priority: Priority.high);
+    const NotificationDetails platformChannelSpecifics =
+    NotificationDetails(android: androidPlatformChannelSpecifics);
+    Map<String, dynamic> confJSON = jsonDecode(config);
+    _notifs = _notifs ?? confJSON['logged_out_notifs'] as bool;
+    List<RepeatInterval> intervalCodes = [RepeatInterval.everyMinute, RepeatInterval.hourly, RepeatInterval.daily, RepeatInterval.weekly];
+    if(_notifs ?? true) {
+      flutterLocalNotificationsPlugin.periodicallyShow(0, 'You Are Logged Out',
+          'Log back in to receive notifications about your cycle.', intervalCodes[confJSON['logged_out_notif_freq'] as int],
+          platformChannelSpecifics,
+          androidAllowWhileIdle: true);
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
@@ -130,6 +159,17 @@ class DecryptPage extends StatelessWidget {
                 );
               },
               child: const Text('Shred Data'),
+            ),
+            SwitchListTile(
+              title: const Text('Notify When Logged Out'),
+              value: _notifs as bool,
+              onChanged: (bool value) {
+                setState(() {
+                  _notifs = value;
+                  confJSON['logged_out_notifs'] = value;
+                  localWrite('config.json', jsonEncode(confJSON));
+                });
+              },
             ),
           ],
         ),

@@ -29,6 +29,7 @@ class StartPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Future<String> config = localRead('config.json');
+    flutterLocalNotificationsPlugin.cancel(0);
     return FutureBuilder<String>(
       future: config,
       builder: (BuildContext context, AsyncSnapshot<String> snapshot) {

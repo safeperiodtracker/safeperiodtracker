@@ -17,10 +17,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 class WritePageArguments {
-  WritePageArguments(this.title, this.password, this.nonce, this.data, this.iterations);
+  WritePageArguments(this.title, this.password, this.nonce, this.data, this.iterations, this.loggedOutNotifs, this.loggedOutNotifFreq);
   final String title;
   final String password;
   final List<int> nonce;
   final List<int> data;
   final int iterations;
+  final bool loggedOutNotifs;
+  final int loggedOutNotifFreq;
 }

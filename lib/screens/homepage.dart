@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import 'package:flutter/material.dart';
 import 'package:periodtracker/screens/arguments/homepage.dart';
+import 'package:periodtracker/utilities.dart';
 import 'package:indent/indent.dart';
 
 class HomePage extends StatefulWidget {
@@ -33,6 +34,7 @@ class HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final title = (ModalRoute.of(context)!.settings.arguments as HomePageArguments).title;
+    flutterLocalNotificationsPlugin.cancel(0);
     return Scaffold(
       appBar: AppBar(
         title: Text(title),

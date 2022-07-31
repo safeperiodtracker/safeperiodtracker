@@ -19,22 +19,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:periodtracker/routes.dart';
+import 'package:periodtracker/utilities.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-  FlutterLocalNotificationsPlugin();
   const AndroidInitializationSettings initializationSettingsAndroid =
   AndroidInitializationSettings('app_icon');
   final IOSInitializationSettings initializationSettingsIOS =
   IOSInitializationSettings(
       onDidReceiveLocalNotification: (int id, String? title, String? body, String? payload) {});
-  const MacOSInitializationSettings initializationSettingsMacOS =
-  MacOSInitializationSettings();
   final InitializationSettings initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
-      iOS: initializationSettingsIOS,
-      macOS: initializationSettingsMacOS);
+      iOS: initializationSettingsIOS,);
   await flutterLocalNotificationsPlugin.initialize(initializationSettings,
       onSelectNotification: (String? payload) async {});
   runApp(const PrivatePeriodTracker());

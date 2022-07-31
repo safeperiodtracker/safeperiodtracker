@@ -21,6 +21,7 @@ import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:tuple/tuple.dart';
@@ -175,3 +176,5 @@ Future<List<int>> decryptCompute(Tuple4<AesGcm, SecretBox, SecretKey, List<int>>
 }
 
 Function eq = const ListEquality().equals;
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
