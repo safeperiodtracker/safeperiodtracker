@@ -15,4 +15,4 @@ Private medical services are a human right. They shouldn't be behind a paywall. 
 the project (and hopefully even then) there will NEVER be any features locked behind ads or payment.
 At some point, I might take donations. I might also add ads, but keep in mind they will be optional
 and turned off by default. If I do this, revenue will be used to advertise the app, donated to
-charities, or paid to contributors.
+charities, or paid to contributors (not me).
