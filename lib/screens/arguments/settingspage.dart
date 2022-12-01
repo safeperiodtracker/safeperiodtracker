@@ -16,13 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-class WritePageArguments {
-  WritePageArguments(this.title, this.password, this.nonce, this.data, this.iterations, this.loggedOutNotifs, this.loggedOutNotifFreq);
+class SettingsPageArguments {
+  SettingsPageArguments(this.title, this.config);
   final String title;
-  final String password;
-  final List<int> nonce;
-  final List<int> data;
-  final int iterations;
-  final bool loggedOutNotifs;
-  final int loggedOutNotifFreq;
+  final String config;
 }

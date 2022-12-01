@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import 'package:flutter/widgets.dart';
 import 'package:periodtracker/screens/homepage.dart';
+import 'package:periodtracker/screens/settingspage.dart';
 import 'package:periodtracker/screens/startpage.dart';
 import 'package:periodtracker/screens/decryptpage.dart';
 import 'package:periodtracker/screens/setuppage.dart';
@@ -33,4 +34,5 @@ final Map<String, WidgetBuilder> routes = <String, WidgetBuilder>{
   '/WritePage': (BuildContext context) => const WritePage(),
   '/ReadPage': (BuildContext context) => const ReadPage(),
   '/HomePage': (BuildContext context) => const HomePage(),
+  '/SettingsPage': (BuildContext context) => const SettingsPage(),
 };

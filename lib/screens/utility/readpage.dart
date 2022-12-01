@@ -68,7 +68,7 @@ class ReadPage extends StatelessWidget {
       future: task,
       builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
         if(snapshot.hasData){
-          final homeargs = HomePageArguments('Home');
+          final homeargs = HomePageArguments('Home', config);
           SchedulerBinding.instance.addPostFrameCallback((_) {
             Navigator.pushNamedAndRemoveUntil(
               context,

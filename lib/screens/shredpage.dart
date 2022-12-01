@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:indent/indent.dart';
@@ -85,8 +86,8 @@ class ShredFormState extends State<ShredForm> {
                 context: context,
                 builder: (BuildContext context) => AlertDialog(
                   title: const Text('Confirm Shred'),
-                  content: RichText(
-                    text: TextSpan(
+                  content: AutoSizeText.rich(
+                    TextSpan(
                       children: [
                         TextSpan(
                           text: warning,
@@ -101,6 +102,7 @@ class ShredFormState extends State<ShredForm> {
                         ),
                       ],
                     ),
+                    minFontSize: 0,
                   ),
                   actions: <Widget>[
                     TextButton(
