@@ -108,11 +108,12 @@ class DecryptPage extends StatefulWidget {
 
 class DecryptPageState extends State<DecryptPage> {
   bool? _notifs;
+  String? config;
 
   @override
   Widget build(BuildContext context) {
     final title = (ModalRoute.of(context)!.settings.arguments as DecryptPageArguments).title;
-    final config = (ModalRoute.of(context)!.settings.arguments as DecryptPageArguments).config;
+    config = config ?? (ModalRoute.of(context)!.settings.arguments as DecryptPageArguments).config;
     final failed = (ModalRoute.of(context)!.settings.arguments as DecryptPageArguments).failed;
     flutterLocalNotificationsPlugin.cancel(0);
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
@@ -123,7 +124,7 @@ class DecryptPageState extends State<DecryptPage> {
         priority: Priority.high);
     const NotificationDetails platformChannelSpecifics =
     NotificationDetails(android: androidPlatformChannelSpecifics);
-    Map<String, dynamic> confJSON = jsonDecode(config);
+    Map<String, dynamic> confJSON = jsonDecode(config ?? '');
     _notifs = _notifs ?? confJSON['logged_out_notifs'] as bool;
     List<RepeatInterval> intervalCodes = [RepeatInterval.everyMinute, RepeatInterval.hourly, RepeatInterval.daily, RepeatInterval.weekly];
     if(_notifs ?? true) {
@@ -148,7 +149,7 @@ class DecryptPageState extends State<DecryptPage> {
                 fontSize: 13,
               ),
             ) : const Text(''),
-            DecryptForm(config: config),
+            DecryptForm(config: config ?? ''),
             ElevatedButton(
               onPressed: () {
                 final shredargs = ShredPageArguments('Shred Data');
@@ -168,6 +169,7 @@ class DecryptPageState extends State<DecryptPage> {
                   _notifs = value;
                   confJSON['logged_out_notifs'] = value;
                   localWrite('config.json', jsonEncode(confJSON));
+                  config = jsonEncode(confJSON);
                 });
               },
             ),

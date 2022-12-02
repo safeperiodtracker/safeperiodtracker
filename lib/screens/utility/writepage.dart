@@ -29,7 +29,7 @@ import 'package:periodtracker/screens/arguments/writepage.dart';
 class WritePage extends StatelessWidget {
   const WritePage({Key? key}) : super(key: key);
 
-  Future<int> encrypt(String password, List<int> nonce, List<int> data, int iterations, bool loggedOutNotifs, int loggedOutNotifFreq) async {
+  Future<int> encrypt(String password, List<int> nonce, List<int> data, int iterations, bool loggedOutNotifs, int loggedOutNotifFreq, bool notifs) async {
     final keyDerivator = Pbkdf2(
       macAlgorithm: Hmac.sha512(),
       iterations: iterations,
@@ -39,8 +39,8 @@ class WritePage extends StatelessWidget {
     final algorithm = AesGcm.with256bits();
     final encNonce = algorithm.newNonce();
     final Map<String, dynamic> config = Map.fromIterables(
-      ['nonce', 'iterations', 'logged_out_notifs', 'logged_out_notif_freq'],
-      [nonce, iterations, loggedOutNotifs, loggedOutNotifFreq],
+      ['nonce', 'iterations', 'logged_out_notifs', 'logged_out_notif_freq', 'notifs'],
+      [nonce, iterations, loggedOutNotifs, loggedOutNotifFreq, notifs],
     );
     await localWrite('config.json', jsonEncode(config));
     final secretBox = await compute(
@@ -67,7 +67,8 @@ class WritePage extends StatelessWidget {
     final iterations = (ModalRoute.of(context)!.settings.arguments as WritePageArguments).iterations;
     final loggedOutNotifs = (ModalRoute.of(context)!.settings.arguments as WritePageArguments).loggedOutNotifs;
     final loggedOutNotifFreq = (ModalRoute.of(context)!.settings.arguments as WritePageArguments).loggedOutNotifFreq;
-    Future<int> task = encrypt(password, nonce, data, iterations, loggedOutNotifs, loggedOutNotifFreq);
+    final notifs = (ModalRoute.of(context)!.settings.arguments as WritePageArguments).notifs;
+    Future<int> task = encrypt(password, nonce, data, iterations, loggedOutNotifs, loggedOutNotifFreq, notifs);
     return FutureBuilder<int>(
       future: task,
       builder: (BuildContext context, AsyncSnapshot<int> snapshot) {

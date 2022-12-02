@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 class WritePageArguments {
-  WritePageArguments(this.title, this.password, this.nonce, this.data, this.iterations, this.loggedOutNotifs, this.loggedOutNotifFreq);
+  WritePageArguments(this.title, this.password, this.nonce, this.data, this.iterations, this.loggedOutNotifs, this.loggedOutNotifFreq, this.notifs);
   final String title;
   final String password;
   final List<int> nonce;
@@ -25,4 +25,5 @@ class WritePageArguments {
   final int iterations;
   final bool loggedOutNotifs;
   final int loggedOutNotifFreq;
+  final bool notifs;
 }

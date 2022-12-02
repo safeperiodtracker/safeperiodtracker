@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:periodtracker/screens/arguments/homepage.dart';
 import 'package:periodtracker/screens/arguments/settingspage.dart';
@@ -36,16 +37,8 @@ class HomePageState extends State<HomePage> {
   String? config;
   @override
   Widget build(BuildContext context) {
-    if(title != null) {
-      title = (ModalRoute
-          .of(context)!
-          .settings
-          .arguments as HomePageArguments).title;
-      config = (ModalRoute
-          .of(context)!
-          .settings
-          .arguments as HomePageArguments).config;
-    }
+    title = title ?? (ModalRoute.of(context)!.settings.arguments as HomePageArguments).title;
+    config = config ?? (ModalRoute.of(context)!.settings.arguments as HomePageArguments).config;
     flutterLocalNotificationsPlugin.cancel(0);
     return Scaffold(
       appBar: AppBar(
@@ -68,7 +61,7 @@ class HomePageState extends State<HomePage> {
                 context: context,
                 builder: (BuildContext context) => AlertDialog(
                   title: const Text('Confirm Logout'),
-                  content: Text(
+                  content: AutoSizeText(
                     '''
                     You cannot receive notifications when logged out.
                     

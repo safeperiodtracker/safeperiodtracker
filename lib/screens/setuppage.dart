@@ -98,6 +98,7 @@ class StartFormState extends State<StartForm> {
                   int.tryParse(roundsController.text) ?? 120000,
                   true,
                   2,
+                  true,
                 );
                 Navigator.pushNamedAndRemoveUntil(
                   context,
